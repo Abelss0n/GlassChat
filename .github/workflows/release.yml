@@ -1,0 +1,89 @@
+# Builds GlassChat and publishes it to the custom plugin repository.
+#
+# To release: set <Version> in GlassChat/GlassChat.csproj, commit, then push a
+# matching tag, e.g. `git tag v0.1.0 && git push origin v0.1.0`. This workflow
+# builds the plugin, attaches it to a GitHub Release for that tag, and updates
+# pluginmaster.json on main so Dalamud offers the new version in game.
+
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: windows-latest
+    env:
+      # Dalamud.NET.Sdk reads its reference assemblies from here.
+      DALAMUD_HOME: ${{ github.workspace }}\dalamud
+      TAG: ${{ github.ref_name }}
+
+    steps:
+      - name: Check out
+        uses: actions/checkout@v4
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Check the tag matches the project version
+        shell: pwsh
+        run: |
+          [xml]$project = Get-Content GlassChat/GlassChat.csproj
+          $version = @($project.Project.PropertyGroup.Version | Where-Object { $_ })[0]
+          if ($env:TAG -ne "v$version") {
+            throw "Tag $env:TAG doesn't match <Version>$version</Version> in GlassChat.csproj. Update one of them."
+          }
+
+      - name: Download Dalamud
+        shell: pwsh
+        run: |
+          Invoke-WebRequest https://goatcorp.github.io/dalamud-distrib/latest.zip -OutFile dalamud.zip
+          Expand-Archive dalamud.zip -DestinationPath $env:DALAMUD_HOME
+
+      - name: Restore
+        run: dotnet restore GlassChat.sln --locked-mode
+
+      - name: Build
+        run: dotnet build GlassChat.sln -c Release --no-restore
+
+      - name: Create the GitHub Release
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create $env:TAG GlassChat/bin/Release/GlassChat/latest.zip `
+            --title "GlassChat $($env:TAG.TrimStart('v'))" `
+            --generate-notes
+
+      - name: Update pluginmaster.json on main
+        shell: pwsh
+        run: |
+          # The packager's manifest has every plugin field; add where to download it.
+          $manifest = Get-Content GlassChat/bin/Release/GlassChat/GlassChat.json -Raw | ConvertFrom-Json
+          $url = "https://github.com/$env:GITHUB_REPOSITORY/releases/download/$env:TAG/latest.zip"
+          $manifest | Add-Member -NotePropertyName DownloadLinkInstall -NotePropertyValue $url -Force
+          $manifest | Add-Member -NotePropertyName DownloadLinkUpdate -NotePropertyValue $url -Force
+          $manifest | Add-Member -NotePropertyName DownloadLinkTesting -NotePropertyValue $url -Force
+          $manifest | Add-Member -NotePropertyName LastUpdate -NotePropertyValue ([DateTimeOffset]::UtcNow.ToUnixTimeSeconds()) -Force
+          $json = ConvertTo-Json -InputObject @($manifest) -Depth 10
+
+          git fetch origin main
+          git checkout -B main origin/main
+          [IO.File]::WriteAllText("$PWD/pluginmaster.json", $json + "`n", [Text.UTF8Encoding]::new($false))
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add pluginmaster.json
+          git commit -m "Publish GlassChat $env:TAG to the plugin repository"
+          git push origin main

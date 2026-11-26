@@ -1,2 +1,2 @@
-# Auto detect text files and perform LF normalization
-* text=auto
+﻿# Generated files
+GlassChat/Resources/Language.*.resx linguist-generated=true

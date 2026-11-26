@@ -1,0 +1,29 @@
+name: GlassChat
+author: Abelsson
+punchline: A complete replacement for the in-game chat, on real glass.
+description: |-
+  GlassChat is a fork of Chat 2, a complete rewrite of the in-game chat window as a plugin.
+  It adds:
+
+  - A real glass window background, with themes
+  - Minimising the chat to just its input bar, with new messages shown briefly above it
+  - A resize grip in the top-right corner
+
+  And keeps everything from Chat 2:
+
+  - Unlimited tabs
+  - Tabs that always send to a certain channel
+  - More flexible filtering
+  - RGB channel colouring
+  - Completely variable font size
+  - Sidebar tabs
+  - Unread counts
+  - Emotes
+  - Screenshot mode (obfuscate names)
+repo_url: https://github.com/Abelss0n/GlassChat
+accepts_feedback: true
+tags:
+  - Social
+  - UI
+  - Chat
+  - Replacement
