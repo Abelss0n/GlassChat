@@ -228,12 +228,31 @@ public partial class ChatLog
         if (FooterHeight <= 0f)
             return;
 
-        var footerTop = ImGui.GetWindowHeight() - ImGui.GetStyle().WindowPadding.Y - FooterHeight;
+        var footerTop = FooterTopY();
         var shift = footerTop - CollapsedPreviewHeight - CollapsedStartY;
         if (CollapsedPreviewHeight > 0f && shift != 0f)
             ShiftVertices(drawList, firstVertex, shift);
 
         ImGui.SetCursorPosY(footerTop);
+    }
+
+    /// <summary>
+    /// Where the footer starts so that it ends exactly at the window's bottom
+    /// padding, in window coordinates. The same in both modes, so the bar
+    /// doesn't move when the window collapses or expands.
+    /// </summary>
+    private float FooterTopY()
+        => ImGui.GetWindowHeight() - ImGui.GetStyle().WindowPadding.Y - FooterHeight;
+
+    /// <summary>
+    /// Expanded counterpart of the collapsed anchoring: puts the footer at
+    /// <see cref="FooterTopY"/> after the tabs and message log. Call right
+    /// after they are drawn.
+    /// </summary>
+    private void AnchorFooter()
+    {
+        if (FooterHeight > 0f)
+            ImGui.SetCursorPosY(FooterTopY());
     }
 
     private static unsafe void ShiftVertices(ImDrawListPtr drawList, int firstVertex, float dy)

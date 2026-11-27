@@ -225,6 +225,12 @@ public partial class ChatLog : Window, IChatWindow
 
     public float GetRemainingHeightForMessageLog(bool supportsInputPreview)
     {
+        // Main window: leave exactly the footer's measured height (input
+        // preview, channel name and input row) below the log, so the footer
+        // sits in the same place whether the log is shown or collapsed.
+        if (supportsInputPreview && FooterHeight > 0f)
+            return ImGui.GetContentRegionAvail().Y - FooterHeight - ImGui.GetStyle().ItemSpacing.Y;
+
         var height = ImGui.GetContentRegionAvail().Y - ImGui.CalcTextSize("A").Y * 2 - ImGui.GetStyle().ItemSpacing.Y - ImGui.GetStyle().FramePadding.Y * 2;
 
         if (supportsInputPreview && Plugin.Config.PreviewPosition is PreviewPosition.Inside)
@@ -390,7 +396,12 @@ public partial class ChatLog : Window, IChatWindow
         Position = null;
 
         var currentSize = ImGui.GetWindowSize();
-        var resized = LastWindowSize != currentSize;
+
+        // Message heights are cached and reset after a resize so the text
+        // re-wraps. Wrapping only depends on the width, so a height-only
+        // change (collapsing, expanding, the collapsed preview) keeps them;
+        // resetting there made the log re-flow right after expanding.
+        var resized = LastWindowSize.X != currentSize.X;
         LastWindowSize = currentSize;
         LastWindowPos = ImGui.GetWindowPos();
 
@@ -411,6 +422,8 @@ public partial class ChatLog : Window, IChatWindow
                 DrawTabSidebar();
             else
                 DrawTabBar();
+
+            AnchorFooter();
         }
         else
         {
