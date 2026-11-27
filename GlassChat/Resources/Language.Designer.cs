@@ -4379,5 +4379,77 @@ namespace GlassChat.Resources {
             }
         }
 
+        /// <summary>
+        ///   Looks up a localized string similar to Chat 2.
+        /// </summary>
+        internal static string Options_ChatTwoImport_Header {
+            get {
+                return ResourceManager.GetString("Options_ChatTwoImport_Header", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Chat 2 settings were found on this PC..
+        /// </summary>
+        internal static string Options_ChatTwoImport_Found {
+            get {
+                return ResourceManager.GetString("Options_ChatTwoImport_Found", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to No Chat 2 settings were found on this PC. If you used Chat 2, run it once on this PC so it saves its settings, then come back here..
+        /// </summary>
+        internal static string Options_ChatTwoImport_NotFound {
+            get {
+                return ResourceManager.GetString("Options_ChatTwoImport_NotFound", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Importing replaces your tabs, channels, colours, fonts and other chat settings with Chat 2&apos;s. GlassChat&apos;s own settings (glass, theme and chat bar) stay as they are. Chat history isn&apos;t imported..
+        /// </summary>
+        internal static string Options_ChatTwoImport_Description {
+            get {
+                return ResourceManager.GetString("Options_ChatTwoImport_Description", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Import settings from Chat 2.
+        /// </summary>
+        internal static string Options_ChatTwoImport_Button {
+            get {
+                return ResourceManager.GetString("Options_ChatTwoImport_Button", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Hold Ctrl and Shift to click. This replaces your current chat settings..
+        /// </summary>
+        internal static string Options_ChatTwoImport_Tooltip {
+            get {
+                return ResourceManager.GetString("Options_ChatTwoImport_Tooltip", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Chat 2&apos;s settings were imported..
+        /// </summary>
+        internal static string Options_ChatTwoImport_Success {
+            get {
+                return ResourceManager.GetString("Options_ChatTwoImport_Success", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Chat 2&apos;s settings couldn&apos;t be imported: {0}.
+        /// </summary>
+        internal static string Options_ChatTwoImport_Failed {
+            get {
+                return ResourceManager.GetString("Options_ChatTwoImport_Failed", resourceCulture);
+            }
+        }
+
     }
 }

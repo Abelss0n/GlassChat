@@ -33,7 +33,7 @@ public sealed class SettingsWindow : Window
 
         Tabs =
         [
-            new GlassChatConfig(Mutable),
+            new GlassChatConfig(Plugin, Mutable),
             new Display(Mutable),
             new ChatLogConfig(Plugin, Mutable),
             new Emote(Plugin, Mutable),

@@ -118,6 +118,9 @@ public class Configuration : IPluginConfiguration
 
     public float TooltipOffset;
     public float WindowAlpha = 100f;
+
+    // GlassChat's own settings start here. ChatTwoImport.Apply keeps these
+    // when importing Chat 2's settings: add any new one there too.
     public bool GlassEnabled;
     public bool GlassReducedQuality;
     public string? GlassTheme; // Glasswork Look key, null for the default style

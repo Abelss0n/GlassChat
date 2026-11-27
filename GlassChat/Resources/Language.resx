@@ -1562,4 +1562,28 @@ Your old database can still be recovered, please contact the plugin author for h
     <data name="Options_IdleMinimiseSeconds_Description" xml:space="preserve">
         <value>Between 3 and 600 seconds.</value>
     </data>
+    <data name="Options_ChatTwoImport_Header" xml:space="preserve">
+        <value>Chat 2</value>
+    </data>
+    <data name="Options_ChatTwoImport_Found" xml:space="preserve">
+        <value>Chat 2 settings were found on this PC.</value>
+    </data>
+    <data name="Options_ChatTwoImport_NotFound" xml:space="preserve">
+        <value>No Chat 2 settings were found on this PC. If you used Chat 2, run it once on this PC so it saves its settings, then come back here.</value>
+    </data>
+    <data name="Options_ChatTwoImport_Description" xml:space="preserve">
+        <value>Importing replaces your tabs, channels, colours, fonts and other chat settings with Chat 2&apos;s. GlassChat&apos;s own settings (glass, theme and chat bar) stay as they are. Chat history isn&apos;t imported.</value>
+    </data>
+    <data name="Options_ChatTwoImport_Button" xml:space="preserve">
+        <value>Import settings from Chat 2</value>
+    </data>
+    <data name="Options_ChatTwoImport_Tooltip" xml:space="preserve">
+        <value>Hold Ctrl and Shift to click. This replaces your current chat settings.</value>
+    </data>
+    <data name="Options_ChatTwoImport_Success" xml:space="preserve">
+        <value>Chat 2&apos;s settings were imported.</value>
+    </data>
+    <data name="Options_ChatTwoImport_Failed" xml:space="preserve">
+        <value>Chat 2&apos;s settings couldn&apos;t be imported: {0}</value>
+    </data>
 </root>

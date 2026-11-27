@@ -8,18 +8,32 @@ namespace GlassChat.Ui.SettingsTabs;
 /// <summary>Settings for the features GlassChat adds on top of Chat 2.</summary>
 public sealed class GlassChatConfig : ISettingsTab
 {
+    private readonly Plugin Plugin;
     private Configuration Mutable { get; }
 
     public string Name { get; } = $"{Plugin.PluginName}###tabs-glasschat";
 
-    public GlassChatConfig(Configuration mutable)
+    // Chat 2 import: looked up when the tab is opened, not every frame.
+    private bool ChatTwoLookupDone;
+    private FileInfo? ChatTwoConfig;
+    private string? ImportResult;
+    private bool ImportFailed;
+
+    public GlassChatConfig(Plugin plugin, Configuration mutable)
     {
+        Plugin = plugin;
         Mutable = mutable;
     }
 
     public void Draw(bool changed)
     {
         using var wrap = ImRaii.TextWrapPos(0.0f);
+
+        if (changed || !ChatTwoLookupDone)
+        {
+            ChatTwoConfig = ChatTwoImport.FindConfigFile();
+            ChatTwoLookupDone = true;
+        }
 
         DrawHeading(Language.Options_GlassChat_GlassHeader);
 
@@ -69,6 +83,57 @@ public sealed class GlassChatConfig : ISettingsTab
                 Mutable.ChatLogIdleMinimiseSeconds = Math.Clamp(Mutable.ChatLogIdleMinimiseSeconds, 3, 600);
         }
         ImGui.Spacing();
+
+        ImGui.Spacing();
+        DrawHeading(Language.Options_ChatTwoImport_Header);
+        DrawChatTwoImport();
+    }
+
+    private void DrawChatTwoImport()
+    {
+        if (ChatTwoConfig == null)
+        {
+            ImGuiUtil.HelpText(Language.Options_ChatTwoImport_NotFound);
+            return;
+        }
+
+        ImGui.TextUnformatted(Language.Options_ChatTwoImport_Found);
+        ImGuiUtil.HelpText(Language.Options_ChatTwoImport_Description);
+        ImGui.Spacing();
+
+        if (ImGuiUtil.CtrlShiftButton(Language.Options_ChatTwoImport_Button, Language.Options_ChatTwoImport_Tooltip))
+            Import(ChatTwoConfig);
+
+        if (ImportResult == null)
+            return;
+
+        ImGui.Spacing();
+        if (ImportFailed)
+            ImGuiUtil.WarningText(ImportResult);
+        else
+            ImGui.TextUnformatted(ImportResult);
+    }
+
+    private void Import(FileInfo file)
+    {
+        try
+        {
+            var imported = ChatTwoImport.Load(file.FullName);
+            ChatTwoImport.Apply(Plugin, imported);
+
+            // Show the imported settings here too, so saving this window
+            // afterwards doesn't put the old ones back.
+            Mutable.UpdateFrom(Plugin.Config, false);
+
+            ImportResult = Language.Options_ChatTwoImport_Success;
+            ImportFailed = false;
+        }
+        catch (Exception ex)
+        {
+            Plugin.Log.Error(ex, "Importing Chat 2's settings failed");
+            ImportResult = string.Format(Language.Options_ChatTwoImport_Failed, ex.Message);
+            ImportFailed = true;
+        }
     }
 
     private static void DrawHeading(string text)
