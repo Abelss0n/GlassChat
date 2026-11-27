@@ -28,6 +28,10 @@ tags:
   - Chat
   - Replacement
 changelog: |-
+  0.1.2
+  - Fixed: the chat no longer bounces when you minimise or expand it with the arrow button. This fix was meant for 0.1.1 but missed the release.
+
+  0.1.1
   New
   - Import your settings from Chat 2: Settings > GlassChat > Chat 2, then hold Ctrl and Shift and click Import. Your glass and chat bar settings are kept.
   - Select chat text by clicking and dragging over it, then copy it with Ctrl+C.
