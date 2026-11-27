@@ -248,6 +248,8 @@ public partial class ChatLog : Window, IChatWindow
 
     private void TabSwitched(Tab newTab, Tab previousTab)
     {
+        TextSelection.Clear();
+
         // Use the fixed channel if set by the user, or set it to the current tabs channel if this tab wasn't accessed before
         if (newTab.Channel is not null)
             newTab.CurrentChannel.Channel = newTab.Channel.Value;
@@ -364,6 +366,7 @@ public partial class ChatLog : Window, IChatWindow
             ReleaseCollapseSize();
             UpdateTopRightGrip();
             DrawChatLog();
+            TextSelection.HandleCopy(Plugin.CurrentTab);
             EndBarGlass();
             FitCollapsedHeight();
             UpdateIdleMinimise();
@@ -698,6 +701,7 @@ public partial class ChatLog : Window, IChatWindow
 
     private void DrawMessages(Tab tab, PayloadHandler handler, bool isTable, bool moreCompact = false, float oldCellPaddingY = 0)
     {
+        TextSelection.BeginLog(tab);
         try
         {
             // This may produce ApplicationException which is catched below.
@@ -842,6 +846,10 @@ public partial class ChatLog : Window, IChatWindow
                     ImGui.TableNextColumn();
 
                 var lineWidth = ImGui.GetContentRegionAvail().X;
+
+                // Only the sender and content are selectable text; the
+                // timestamp above stays out of it.
+                TextSelection.BeginMessage(message, i);
                 if (message.Sender.Count > 0)
                 {
                     InputHandler.ChunkHandler.DrawChunks(message.Sender, true, handler, lineWidth);
@@ -853,6 +861,7 @@ public partial class ChatLog : Window, IChatWindow
                     InputHandler.ChunkHandler.DrawChunks([new TextChunk(ChunkSource.Content, null, " ")], true, handler, lineWidth);
                 else
                     InputHandler.ChunkHandler.DrawChunks(message.Content, true, handler, lineWidth);
+                TextSelection.EndMessage();
 
                 message.IsVisible[tab.Identifier] = ImGui.IsItemVisible();
             }
@@ -865,6 +874,10 @@ public partial class ChatLog : Window, IChatWindow
         catch (Exception ex)
         {
             Plugin.Log.Warning(ex, "Error drawing chat log");
+        }
+        finally
+        {
+            TextSelection.EndLog();
         }
     }
 

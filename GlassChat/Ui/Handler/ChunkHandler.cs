@@ -1,4 +1,5 @@
 ﻿using System.Numerics;
+using System.Text;
 using GlassChat.Code;
 using GlassChat.Util;
 using Dalamud.Bindings.ImGui;
@@ -93,6 +94,10 @@ public class ChunkHandler
                 else
                     ImGui.Dummy(emoteSize);
 
+                // Selectable as a whole, copied as its text.
+                if (TextSelection.ChunkStart >= 0)
+                    TextSelection.Atomic(Encoding.UTF8.GetByteCount(text.Content ?? ""), ImGui.GetItemRectMin(), ImGui.GetItemRectSize());
+
                 if (ImGui.IsItemHovered())
                     ImGuiUtil.Tooltip(emotePayload.Code);
 
@@ -117,6 +122,46 @@ public class ChunkHandler
         if (text.Italic)
             disposableFont.Push();
 
+        var content = ShownContent(text);
+
+        if (wrap)
+        {
+            ImGuiUtil.WrapText(content, chunk, handler, Plugin.DefaultText, lineWidth);
+        }
+        else
+        {
+            ImGui.TextUnformatted(content);
+            ImGuiUtil.PostPayload(chunk, handler);
+
+            // Not selectable, but later chunks' offsets must stay right.
+            if (TextSelection.ChunkStart >= 0)
+                TextSelection.EndChunk(Encoding.UTF8.GetByteCount(TextSelection.NormaliseLineBreaks(content)));
+        }
+
+        if (text.Italic)
+            disposableFont.Pop();
+    }
+
+    /// <summary>
+    /// The text a chunk shows in the log, or null when it shows none (icons,
+    /// empty chunks). Text selection copies exactly this, so it must match
+    /// what <see cref="DrawChunk"/> draws.
+    /// </summary>
+    public static string? DisplayText(Chunk chunk)
+    {
+        if (chunk is not TextChunk text || string.IsNullOrEmpty(text.Content))
+            return null;
+
+        // Emotes shown as images stand for their own text.
+        if (chunk.Link is EmotePayload emotePayload && Plugin.Config.ShowEmotes && EmoteCache.GetEmote(emotePayload.Code) is { Failed: false })
+            return text.Content;
+
+        return ShownContent(text);
+    }
+
+    /// <summary>A text chunk's content as drawn, names hidden in screenshot mode.</summary>
+    private static string ShownContent(TextChunk text)
+    {
         // Check for contains here as sometimes there are multiple
         // TextChunks with the same PlayerPayload but only one has the name.
         // E.g. party chat with cross world players adds extra chunks.
@@ -128,23 +173,12 @@ public class ChunkHandler
         var content = text.Content ?? "";
         if (PlayerUtil.ScreenshotMode)
         {
-            if (chunk.Link is PlayerPayload playerPayload)
+            if (text.Link is PlayerPayload playerPayload)
                 content = PlayerUtil.HidePlayerInString(content, playerPayload.PlayerName, playerPayload.World.RowId);
             else if (Plugin.PlayerState.IsLoaded)
                 content = PlayerUtil.HidePlayerInString(content, Plugin.PlayerState.CharacterName, Plugin.PlayerState.HomeWorld.RowId);
         }
 
-        if (wrap)
-        {
-            ImGuiUtil.WrapText(content, chunk, handler, Plugin.DefaultText, lineWidth);
-        }
-        else
-        {
-            ImGui.TextUnformatted(content);
-            ImGuiUtil.PostPayload(chunk, handler);
-        }
-
-        if (text.Italic)
-            disposableFont.Pop();
+        return content;
     }
 }

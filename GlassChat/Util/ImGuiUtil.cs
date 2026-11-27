@@ -3,6 +3,7 @@ using System.Text;
 using GlassChat.Code;
 using GlassChat.GameFunctions.Types;
 using GlassChat.Resources;
+using GlassChat.Ui;
 using GlassChat.Ui.Handler;
 using Dalamud.Game.ClientState.Keys;
 using Dalamud.Game.Text.SeStringHandling;
@@ -61,12 +62,20 @@ public static class ImGuiUtil
 
     public static unsafe void WrapText(string csText, Chunk chunk, PayloadHandler? handler, Vector4 defaultText, float lineWidth)
     {
-        void Text(byte* text, byte* textEnd)
+        // Text selection: where this chunk starts in its message's text (-1
+        // outside a message log), and where the current line part starts.
+        var chunkStart = TextSelection.ChunkStart;
+        var partStart = 0;
+
+        void Text(byte* text, byte* textEnd, byte* partBase)
         {
             var oldPos = ImGui.GetCursorScreenPos();
 
             ImGuiNative.TextUnformatted(text, textEnd);
             PostPayload(chunk, handler);
+
+            if (chunkStart >= 0)
+                TextSelection.Text(text, textEnd, chunkStart + partStart + (int)(text - partBase), oldPos, ImGui.GetItemRectSize(), chunk.Link != null);
 
             if (!ReferenceEquals(LastLink, chunk.Link))
                 PayloadBounds.Clear();
@@ -92,9 +101,17 @@ public static class ImGuiUtil
         if (csText.Length == 0)
             return;
 
-        foreach (var part in csText.Split(["\r\n", "\r", "\n"], StringSplitOptions.None))
+        var parts = csText.Split(["\r\n", "\r", "\n"], StringSplitOptions.None);
+        var previousLength = 0;
+        for (var partIndex = 0; partIndex < parts.Length; partIndex++)
         {
-            var bytes = Encoding.UTF8.GetBytes(part);
+            // Advance past the previous part and the "\n" byte a line break
+            // counts as. Done here so the `continue`s below can't skip it.
+            if (partIndex > 0)
+                partStart += previousLength + 1;
+
+            var bytes = Encoding.UTF8.GetBytes(parts[partIndex]);
+            previousLength = bytes.Length;
             fixed (byte* rawText = bytes)
             {
                 var text = rawText;
@@ -116,7 +133,7 @@ public static class ImGuiUtil
                 var properBreak = firstSpace <= endPrevLine;
                 if (properBreak)
                 {
-                    Text(text, endPrevLine);
+                    Text(text, endPrevLine, rawText);
                 }
                 else
                 {
@@ -157,7 +174,7 @@ public static class ImGuiUtil
                         break;
                     }
 
-                    Text(text, endPrevLine);
+                    Text(text, endPrevLine, rawText);
 
                     if (!properBreak)
                     {
@@ -167,6 +184,9 @@ public static class ImGuiUtil
                 }
             }
         }
+
+        if (chunkStart >= 0)
+            TextSelection.EndChunk(partStart + previousLength);
     }
 
     private static unsafe byte* FindFirstSpace(byte* text, byte* textEnd)

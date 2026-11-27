@@ -136,6 +136,7 @@ public class Popout : Window, IChatWindow
             : ImGui.GetContentRegionAvail().Y;
 
         Plugin.ChatLog.DrawMessageLog(Tab, InputHandler.PayloadHandler, remainingHeight, false);
+        TextSelection.HandleCopy(Tab);
 
         if (!Tab.SupportsInput)
             return;
