@@ -27,3 +27,13 @@ tags:
   - UI
   - Chat
   - Replacement
+changelog: |-
+  New
+  - Import your settings from Chat 2: Settings > GlassChat > Chat 2, then hold Ctrl and Shift and click Import. Your glass and chat bar settings are kept.
+  - Select chat text by clicking and dragging over it, then copy it with Ctrl+C.
+
+  Fixes
+  - The minimised chat no longer bounces when new messages appear, or when you minimise and expand it.
+
+  Changes
+  - Dragging on the message log now selects text instead of moving the chat window. Move the window by its tab bar or edges.
