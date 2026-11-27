@@ -3,7 +3,7 @@
     "Author": "Abelsson",
     "Name": "GlassChat",
     "InternalName": "GlassChat",
-    "AssemblyVersion": "0.1.1.0",
+    "AssemblyVersion": "0.1.2.0",
     "Description": "GlassChat is a fork of Chat 2, a complete rewrite of the in-game chat window as a plugin.\nIt adds:\n\n- A real glass window background, with themes\n- Minimising the chat to just its input bar, with new messages shown briefly above it\n- A resize grip in the top-right corner\n\nAnd keeps everything from Chat 2:\n\n- Unlimited tabs\n- Tabs that always send to a certain channel\n- More flexible filtering\n- RGB channel colouring\n- Completely variable font size\n- Sidebar tabs\n- Unread counts\n- Emotes\n- Screenshot mode (obfuscate names)",
     "ApplicableVersion": "any",
     "RepoUrl": "https://github.com/Abelss0n/GlassChat",
@@ -19,11 +19,11 @@
     "CanUnloadAsync": false,
     "LoadPriority": 0,
     "Punchline": "A complete replacement for the in-game chat, on real glass.",
-    "Changelog": "New\n- Import your settings from Chat 2: Settings > GlassChat > Chat 2, then hold Ctrl and Shift and click Import. Your glass and chat bar settings are kept.\n- Select chat text by clicking and dragging over it, then copy it with Ctrl+C.\n\nFixes\n- The minimised chat no longer bounces when new messages appear, or when you minimise and expand it.\n\nChanges\n- Dragging on the message log now selects text instead of moving the chat window. Move the window by its tab bar or edges.",
+    "Changelog": "0.1.2\n- Fixed: the chat no longer bounces when you minimise or expand it with the arrow button. This fix was meant for 0.1.1 but missed the release.\n\n0.1.1\nNew\n- Import your settings from Chat 2: Settings > GlassChat > Chat 2, then hold Ctrl and Shift and click Import. Your glass and chat bar settings are kept.\n- Select chat text by clicking and dragging over it, then copy it with Ctrl+C.\n\nFixes\n- The minimised chat no longer bounces when new messages appear, or when you minimise and expand it.\n\nChanges\n- Dragging on the message log now selects text instead of moving the chat window. Move the window by its tab bar or edges.",
     "AcceptsFeedback": true,
-    "DownloadLinkInstall": "https://github.com/Abelss0n/GlassChat/releases/download/v0.1.1/latest.zip",
-    "DownloadLinkUpdate": "https://github.com/Abelss0n/GlassChat/releases/download/v0.1.1/latest.zip",
-    "DownloadLinkTesting": "https://github.com/Abelss0n/GlassChat/releases/download/v0.1.1/latest.zip",
-    "LastUpdate": 1795749582
+    "DownloadLinkInstall": "https://github.com/Abelss0n/GlassChat/releases/download/v0.1.2/latest.zip",
+    "DownloadLinkUpdate": "https://github.com/Abelss0n/GlassChat/releases/download/v0.1.2/latest.zip",
+    "DownloadLinkTesting": "https://github.com/Abelss0n/GlassChat/releases/download/v0.1.2/latest.zip",
+    "LastUpdate": 1795750269
   }
 ]
