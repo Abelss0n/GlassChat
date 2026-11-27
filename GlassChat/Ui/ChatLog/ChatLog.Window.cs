@@ -414,6 +414,8 @@ public partial class ChatLog : Window, IChatWindow
             DrawCollapsedPreview(Plugin.CurrentTab);
         }
 
+        MarkFooterTop();
+
         var activeTab = Plugin.CurrentTab;
 
         // This tab has a fixed channel, so we force this channel to be always set as current

@@ -62,6 +62,24 @@ public partial class ChatLog
     // Idle minimise: the last frame the window was in use, in ms ticks.
     private long LastInteraction;
 
+    // Bottom anchoring while collapsed. A height change only applies on the
+    // next frame, so laying the content out top-down would push the bar down
+    // and back up whenever the preview grows or shrinks (or right after
+    // collapsing). Instead the footer (input preview, channel name and input
+    // row) is kept at a fixed distance from the window's bottom edge, and the
+    // preview sits directly above it; only the top edge ever moves.
+    private float FooterTopScreenY;
+    private float FooterHeight;
+    private float CollapsedStartY;
+    private float CollapsedPreviewHeight;
+
+    /// <summary>
+    /// True when this frame drew the collapsed layout. Collapsing with the
+    /// button happens partway through drawing the expanded one, and that
+    /// frame has no collapsed measurements to size the window with.
+    /// </summary>
+    private bool DrewCollapsedLayout;
+
     public bool LogCollapsed => Plugin.Config.ChatLogCollapsed;
 
     /// <summary>
@@ -193,9 +211,41 @@ public partial class ChatLog
         var now = DateTimeOffset.UtcNow;
         ScanCollapsedMessages(tab, now);
 
-        if (!Plugin.Config.ChatLogCollapsedPreview || PreviewCount == 0)
+        var drawList = ImGui.GetWindowDrawList();
+        var firstVertex = drawList.VtxBuffer.Size;
+        CollapsedStartY = ImGui.GetCursorPosY();
+        DrewCollapsedLayout = true;
+
+        if (Plugin.Config.ChatLogCollapsedPreview && PreviewCount > 0)
+            DrawPreviewMessages(now);
+
+        CollapsedPreviewHeight = ImGui.GetCursorPosY() - CollapsedStartY;
+
+        // Anchor the footer to the bottom edge, using its height from the
+        // last frame (it practically never changes), and move the preview,
+        // already drawn from the top, to sit right above it. ImGui can't lay
+        // out upward, so the preview's vertices are shifted instead.
+        if (FooterHeight <= 0f)
             return;
 
+        var footerTop = ImGui.GetWindowHeight() - ImGui.GetStyle().WindowPadding.Y - FooterHeight;
+        var shift = footerTop - CollapsedPreviewHeight - CollapsedStartY;
+        if (CollapsedPreviewHeight > 0f && shift != 0f)
+            ShiftVertices(drawList, firstVertex, shift);
+
+        ImGui.SetCursorPosY(footerTop);
+    }
+
+    private static unsafe void ShiftVertices(ImDrawListPtr drawList, int firstVertex, float dy)
+    {
+        var buffer = drawList.VtxBuffer;
+        var vertices = buffer.Data;
+        for (var i = firstVertex; i < buffer.Size; i++)
+            vertices[i].Pos.Y += dy;
+    }
+
+    private void DrawPreviewMessages(DateTimeOffset now)
+    {
         var lineWidth = ImGui.GetContentRegionAvail().X;
         var baseAlpha = ImGui.GetStyle().Alpha;
         ImGui.PushStyleVar(ImGuiStyleVar.ItemSpacing, Vector2.Zero);
@@ -274,16 +324,29 @@ public partial class ChatLog
     }
 
     /// <summary>
-    /// While collapsed, sizes the window to exactly fit what was drawn. Call
-    /// right after the bar has been drawn, while the cursor sits below it.
+    /// Marks where the footer (input preview, channel name and input row)
+    /// starts. Call right before it, in both modes, so its height is known
+    /// even on the first frame after collapsing.
+    /// </summary>
+    private void MarkFooterTop()
+    {
+        FooterTopScreenY = ImGui.GetCursorScreenPos().Y;
+    }
+
+    /// <summary>
+    /// Measures the footer, and while collapsed sizes the window to fit the
+    /// preview and footer. Call right after the input row's last item.
     /// </summary>
     private void FitCollapsedHeight()
     {
-        if (!LogCollapsed || ImGui.IsWindowDocked())
+        FooterHeight = ImGui.GetItemRectMax().Y - FooterTopScreenY;
+
+        var drewCollapsed = DrewCollapsedLayout;
+        DrewCollapsedLayout = false;
+        if (!LogCollapsed || !drewCollapsed || ImGui.IsWindowDocked())
             return;
 
-        var style = ImGui.GetStyle();
-        var needed = ImGui.GetCursorPosY() - style.ItemSpacing.Y + style.WindowPadding.Y;
+        var needed = CollapsedStartY + CollapsedPreviewHeight + FooterHeight + ImGui.GetStyle().WindowPadding.Y;
         if (MathF.Abs(needed - LastWindowSize.Y) > 0.5f)
             ResizeKeepingBottom(needed);
     }
